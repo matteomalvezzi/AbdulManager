@@ -1,10 +1,28 @@
 # ___________________________________________________Import some libraries
+import pickle
 import socket as sock
 import sys
 from source import Gui_interface
 
-
 #___________________________________________________ Do command  ___________________________________________________
+def getSedi( sock_client ):
+    sock_client.send("get_all_sedi".encode())
+    response = sock_client.recv(4096).decode()
+    lista_sedi = eval(response)
+    return lista_sedi
+
+def getReparti( sock_client, sede ):
+    sock_client.send("get_all_reparti".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(sede.encode())
+
+        response = sock_client.recv(4096).decode()
+        lista_reparti = eval(response)
+
+        return lista_reparti
+
+
 def insertDipendente( new_dipendente ):
     #1. check che tutti i dati siano integri
     #2. send verso il server dei dati

@@ -1,10 +1,12 @@
 # ___________________________________________________Import some libraries
+import pickle
 import socket as sock
 import threading
 import mariadb
 
 
-
+def sql_safe(field):
+    return str(field.replace("'", "''"))
 #___________________________________________________ Connection to mariadDB database ___________________________________________________
 def connect_to_Database():
     # Connect to MariaDB Platform
@@ -26,9 +28,8 @@ def connect_to_Database():
 #___________________________________________________ Get username ___________________________________________________
 def get_user_from_DB(username):
 
-    print("Tentativo di accesso, username: " + str(username))
     cursor = db_connection.cursor()
-    query= "SELECT username FROM login_user WHERE username='" + str(username) + "'"
+    query= "SELECT username FROM login_user WHERE username='" + sql_safe(username) + "'"
     cursor.execute(query)
 
     try:
@@ -45,7 +46,7 @@ def get_user_from_DB(username):
 def get_password_from_DB(username):
 
     cursor = db_connection.cursor()
-    query= "SELECT password FROM login_user WHERE username= '" + str(username) + "'"
+    query= "SELECT password FROM login_user WHERE username= '" + sql_safe(username) + "'"
     cursor.execute(query)
 
     try:
@@ -58,27 +59,149 @@ def get_password_from_DB(username):
         print("ACCOUNT INESISTENTE")
         return None
 
+# ___________________________________________________Execute Command ___________________________________________________
 
-# ___________________________________________________Start
+# ___________________________________________________GET IMPIEGHI, SEDI, REPARTI ___________________________________________________
+def get_all_impieghi ():
+    cursor = db_connection.cursor()
+    query= "SELECT * FROM impieghi;"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    list_impieghi = []
+    for row in result_set:
+        list_impieghi.append(row[1])
+    return list_impieghi
+
+def get_all_sedi ():
+    cursor = db_connection.cursor()
+    query= "SELECT * FROM sedi;"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    lista_sedi = []
+    for row in result_set:
+        sede= []
+        sede.append(row[1])
+        sede.append(row[2])
+        sede.append(row[3])
+        lista_sedi.append(sede)
+    return lista_sedi
+
+def get_all_reparti ( id ):
+    cursor = db_connection.cursor()
+    query= "SELECT * FROM reparti WHERE id_sede = '" + str(id) +"';"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    lista_reparti = []
+    for row in result_set:
+        lista_reparti.append(row[1])
+    return lista_reparti
+
+def get_id_sede ( indirizzo, citta, provincia ):
+    cursor = db_connection.cursor()
+    query = "SELECT id FROM abdulmanager.sedi WHERE indirizzo = '" + sql_safe(indirizzo) + "' AND citta = '" + sql_safe(citta) + "' AND provincia = '" + sql_safe(provincia) + "';"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    row = result_set[0]
+    return row[0]
+
+# ___________________________________________________GET ID IMPIEGO ___________________________________________________
+def get_id_impiego ( nome_impiego ):
+    cursor = db_connection.cursor()
+    query = "SELECT id FROM abdulmanager.impieghi WHERE impiego = '" + sql_safe(nome_impiego) + "';"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    row = result_set[0]
+    return row[0]
+
+
+# ___________________________________________________INSERT SEDE, REPARTO, IMPIEGO___________________________________________________
+def insert_sede ( info_sede ):
+    cursor = db_connection.cursor()
+    query= "INSERT INTO abdulmanager.sedi VALUES (null, '" + sql_safe(info_sede["indirizzo"]) + "', '" + sql_safe(info_sede["citta"]) + "', '" + sql_safe(info_sede["provincia"]) + "', '" + sql_safe(info_sede["cap"])+ "')"
+    cursor.execute(query)
+
+def insert_reparto ( info_reparto ):
+    cursor = db_connection.cursor()
+    query = "INSERT INTO abdulmanager.reparti VALUES (null, '" + sql_safe(info_reparto["nome_reparto"]) + "', '" + sql_safe(info_reparto["id_sede"]) + "')"
+    cursor.execute(query)
+
+def insert_impiego ( impiego ):
+    cursor = db_connection.cursor()
+    query = "INSERT INTO abdulmanager.impieghi VALUES (null, '" + sql_safe(impiego) +"');"
+    cursor.execute(query)
+
+# ___________________________________________________GET DIPENDENTE ___________________________________________________
+def get_dipendente ( nome, cognome):
+    cursor = db_connection.cursor()
+    query = "SELECT * FROM abdulmanager.dipendente d INNER JOIN reparto_dipendenti rd ON d.id = rd.id_dipendente WHERE d.nome = '" + sql_safe(nome) + "' AND d.cognome = '" + sql_safe(cognome) + "';"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    return result_set
+
+def get_dipendente_cf ( cofice_fiscale ):
+    cursor = db_connection.cursor()
+    query = "SELECT * FROM abdulmanager.dipendente d INNER JOIN reparto_dipendenti rd ON d.id = rd.id_dipendente WHERE d.codice_fiscale = '" + sql_safe(cofice_fiscale) + "';"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    return result_set
+
+# ___________________________________________________INSERT DIPENDENTE ___________________________________________________
+def insert_dipendente ( dipendente_info, impiego_id ):
+    cursor = db_connection.cursor()
+    query = "INSERT INTO abdulmanager.dipendente VALUES (null, '" + sql_safe(dipendente_info["nome"]) + "', '" + sql_safe(dipendente_info["cognome"]) + "', '" + sql_safe(dipendente_info["sesso"]) + "', '" + sql_safe(dipendente_info["data_nascita"]) + "', '" + sql_safe(dipendente_info["luogo"]) + "', '" + sql_safe(dipendente_info["cf"]) + "', '" + impiego_id + "', '" + sql_safe(dipendente_info["data_assunzione"]) + "', '" + sql_safe(dipendente_info["stipendio"]) + "');"
+    cursor.execute(query)
+
+
+
+# ___________________________________________________Get Command ___________________________________________________
 
 def get_command (socket_server, client_address, conn_counter):
 
-    print("Aspetto ordini dal client numero : " + str(conn_counter))
+    while True:
+        print("Aspetto ordini dal client numero : " + str(conn_counter))
 
-    command = socket_server.recv(4096)
+        command = socket_server.recv(4096).decode()
 
-    if command == 1:
-        # insert dipendente
-        pass
-    elif command == 2:
-        # elimina dipendente
-        pass
-    elif command == 3:
-        # aggiorna dipendente
-        pass
-    elif command == 4:
-        # visualizza dipendente
-        pass
+        if command == "get_all_sedi":
+            #------------------------------RICHIESTA LISTA SEDI------------------------------
+            print("Richiesta lista sedi")
+            lista_sedi = str(get_all_sedi())
+            socket_server.send(lista_sedi.encode())
+            print("Invio fatto!")
+
+        elif command == "get_all_impieghi":
+            # ------------------------------RICHIESTA LISTA IMPIEGHI------------------------------
+            pass
+        elif command == "get_all_reparti":
+            # ------------------------------RICHIESTA LISTA REPARTI DI UNA SEDE------------------------------
+            print("Richiesta lista reparti con sede")
+            socket_server.send("pronto".encode())
+            sede = socket_server.recv(4096).decode()
+
+            sede_list = sede.split(',')
+            id_sede = get_id_sede( sede_list[0], sede_list[1], sede_list[2] )
+            lista_reparti = str(get_all_reparti( id_sede ))
+            socket_server.send(lista_reparti.encode())
+
+        elif command == "insert_sede":
+            # visualizza dipendente
+            pass
+        elif command == "insert_reparto":
+            # visualizza dipendente
+            pass
+        elif command == "insert_impiego":
+            # visualizza dipendente
+            pass
+        elif command == "insert_dipendente":
+            # visualizza dipendente
+            pass
+        elif command == "get_dipendente":
+            # visualizza dipendente
+            pass
+        elif command == "get_dipendente_cf":
+            # visualizza dipendente
+            pass
+
 
 
 

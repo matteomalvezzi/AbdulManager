@@ -12,7 +12,10 @@ from source import Client as cl
 
 # ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-def correct_authentication(window):
+def correct_authentication(window, socket_client):
+
+    global cl_sock
+    cl_sock = socket_client
 
     new_window = Tk()
     new_window.title("Work page")
@@ -32,7 +35,7 @@ def correct_authentication(window):
                    activeforeground="white",
                    activebackground="#801d2b",
                    pady=10,
-                   command=create,
+                   command= create,
                    )
     pul_1.grid(row=1, column=0, pady=6, padx=3)
 
@@ -66,6 +69,25 @@ def correct_authentication(window):
 
 # ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 def create():  # add someone to the db
+
+    #Get dropdown data
+
+    print("Ciao")
+
+    lista_sedi = cl.getSedi(cl_sock)
+
+    sede1 = lista_sedi[0]
+    for sede in lista_sedi:
+        #set value of dropdown section
+
+        pass
+    sede1_string = str(sede1[0]) + "," + str(sede1[1]) + "," + str(sede1[2])
+
+    print(sede1_string)
+
+    lista_reparti_sede_1 = cl.getReparti( cl_sock, sede1_string)
+    print(lista_reparti_sede_1)
+
     # ------------------gender-----
     def get_gender():
         if val.get() == 0:
@@ -158,8 +180,6 @@ def create():  # add someone to the db
     send.grid(row=5, columnspan=5, pady=6, padx=3)
 
     # Devi farmi un dizionario con tutti i valori interni
-
-    cl.insert(dizionario)
 
 
 # ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

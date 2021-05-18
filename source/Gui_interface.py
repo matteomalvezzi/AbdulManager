@@ -19,7 +19,7 @@ def gui( client_sock ):
 
         #Check result of login
         if result_of_login:
-            Gui_interface_dbAction.correct_authentication(window)
+            Gui_interface_dbAction.correct_authentication(window, client_sock)
         else:
             print("Authentication error")
 
