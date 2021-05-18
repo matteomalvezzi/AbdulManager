@@ -1,12 +1,27 @@
+import sys
 from tkinter import *
-from Python_project.src import Gui_interface_dbAction
+from tkinter import messagebox
+
+from source import Gui_interface_dbAction
+from source import Client
 
 
-def gui(sok):
+# Show message log box
+def show_message_box(messagge_text):
+    messagebox.showerror("Application", str(messagge_text))
 
+def gui():
     # Authentication method
-    def check(user, passw,window):
-        Gui_interface_dbAction.authentication(user, passw, window)
+    def check(user, password, window):
+
+        #Check login
+        result_of_login = Client.send_password_to_server(user, password)
+
+        #Check result of login
+        if result_of_login:
+            Gui_interface_dbAction.correct_authentication(window)
+        else:
+            sys.exit()
 
     def read():#button main function that call check()
         user = entry_1.get()
