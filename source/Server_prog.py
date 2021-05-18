@@ -3,11 +3,13 @@ import socket as sock
 import threading
 import mariadb
 
-global db_connection
+
 
 #___________________________________________________ Connection to mariadDB database ___________________________________________________
 def connect_to_Database():
     # Connect to MariaDB Platform
+
+    global db_connection
     try:
         db_connection = mariadb.connect(
             user="root",
@@ -24,13 +26,19 @@ def connect_to_Database():
 #___________________________________________________ Get username ___________________________________________________
 def get_user_from_DB(username):
 
+    print("Tentativo di accesso, username: " + str(username))
     cursor = db_connection.cursor()
     query= "SELECT username FROM login_user WHERE username='" + str(username) + "'"
     cursor.execute(query)
 
     try:
-        return cursor[0]
+        result_set = cursor.fetchall()
+        for row in result_set:
+            user = row[0]
+            print(user)
+            return user
     except Exception:
+        print("ACCOUNT INESISTENTE")
         return None
 
 #___________________________________________________ Get Password ___________________________________________________
@@ -41,8 +49,13 @@ def get_password_from_DB(username):
     cursor.execute(query)
 
     try:
-        return cursor[0]
+        result_set = cursor.fetchall()
+        for row in result_set:
+            passwd = row[0]
+            print(passwd)
+            return passwd
     except Exception:
+        print("ACCOUNT INESISTENTE")
         return None
 
 
@@ -50,7 +63,7 @@ def get_password_from_DB(username):
 
 def get_command (socket_server, client_address, conn_counter):
 
-    print("Aspetto ordini dal client numero : " + conn_counter)
+    print("Aspetto ordini dal client numero : " + str(conn_counter))
 
     command = socket_server.recv(4096)
 
@@ -102,6 +115,7 @@ def check_password(socket_server):
                 #check if password from database is equals to inserted password
                 if password == password_db:
                     socket_server.send("password_correct".encode())
+                    return True
                 else:
                     socket_server.send("password_not_correct".encode())
                     counter_tentativi = counter_tentativi + 1
@@ -113,6 +127,8 @@ def check_password(socket_server):
         else:
             accesso = True
             socket_server.send("Troppi tentativi".encode())
+
+            return False
 
 
 #___________________________________________________ Create start server socket and with thread accept new client ___________________________________________________
@@ -138,13 +154,19 @@ def start_server_socket(server_address, backlog=1):
 
         conn, client_address = socket_server.accept()
 
-        check_password(conn)
+        isLogin = check_password(conn)
 
-        conn_counter = conn_counter + 1
+        if isLogin:
 
-        t = threading.Thread(target=get_command, args=(conn, client_address, conn_counter, ))
-        t.start()
-        thread.append(t)
+            conn_counter = conn_counter + 1
+
+            t = threading.Thread(target=get_command, args=(conn, client_address, conn_counter, ))
+            t.start()
+            thread.append(t)
+
+        else:
+
+            conn.close()
 
     for thread_i in thread:
         thread_i.join()

@@ -10,18 +10,18 @@ from source import Client
 def show_message_box(messagge_text):
     messagebox.showerror("Application", str(messagge_text))
 
-def gui():
+def gui( client_sock ):
     # Authentication method
     def check(user, password, window):
 
         #Check login
-        result_of_login = Client.send_password_to_server(user, password)
+        result_of_login = Client.send_password_to_server(user, password, client_sock)
 
         #Check result of login
         if result_of_login:
             Gui_interface_dbAction.correct_authentication(window)
         else:
-            sys.exit()
+            print("Authentication error")
 
     def read():#button main function that call check()
         user = entry_1.get()
@@ -35,9 +35,9 @@ def gui():
     window.title("Login Page")
     window.config(background="#801d2b")
 
-    icon = PhotoImage(file="../Other_file/pngegg.png")  # convert my img and set logo
+    icon = PhotoImage(file="../resource/pngegg.png")  # convert my img and set logo
     window.iconphoto(True, icon)
-    icon_2 = PhotoImage(file="../Other_file/logo_2.png")
+    icon_2 = PhotoImage(file="../resource/logo_2.png")
 
     # create the mian frame
     frame = Frame(window,

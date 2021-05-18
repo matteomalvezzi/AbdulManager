@@ -3,8 +3,6 @@ import socket as sock
 import sys
 from source import Gui_interface
 
-global client_sock
-
 
 #___________________________________________________ Do command  ___________________________________________________
 def insertDipendente( new_dipendente ):
@@ -26,41 +24,41 @@ def send_command_to_server(client_sock, command):
     pass
 
 #___________________________________________________ Send for authentication to socket server  ___________________________________________________
-def send_password_to_server( username , password ):
+def send_password_to_server( username , password, client_sock ):
 
-    while True:
-        #send username
-        client_sock.send(username.encode())
-        response = client_sock.recv(4096)
+    client_sock.send(username.encode())
+    response = client_sock.recv(4096)
 
-        #get response about username from server
-        if response.decode() == "user_not_exist":
+    #get response about username from server
+    if response.decode() == "user_not_exist":
+        Gui_interface.show_message_box("Utente inesistente")
+        return False
+
+    elif response.decode() == "user_correct":
+        #send password
+        client_sock.send(password.encode())
+        response = client_sock.recv(4096).decode()
+
+        #get response about password from server
+        if response == "password_not_correct":
+
             Gui_interface.show_message_box("Password errata")
-            continue
-
-        elif response.decode() == "user_correct":
-            #send password
-            client_sock.send(password.encode())
-            response = client_sock.recv(4096).decode()
-
-            #get response about password from server
-            if response == "password_not_correct":
-
-                Gui_interface.show_message_box("Password errata")
-                continue
-
-            elif response == "password_correct":
-
-                print("Username e password corretti accesso eseguito correttamente")
-                return True
-
-        else:
-
-            print("Tenativi falliti, Accesso respinto")
-
-            client_sock.close()
-
             return False
+
+        elif response == "password_correct":
+
+            print("Username e password corretti accesso eseguito correttamente")
+            return True
+
+    else:
+
+        print("Tenativi falliti, Accesso respinto")
+
+        client_sock.close()
+
+        Gui_interface.show_message_box("Tentativi esauriti")
+
+        sys.exit()
 
 #___________________________________________________ Create socket client  ___________________________________________________
 def create_socket_client(indirizzo_server):
@@ -69,6 +67,9 @@ def create_socket_client(indirizzo_server):
         client_sock = sock.socket()
         client_sock.connect(indirizzo_server)
         print("Connessione al server: "+str(indirizzo_server))
+
+        print(client_sock)
+        Gui_interface.gui( client_sock )  # Start Gui interface
 
     except sock.error as errore:
         print("Problema di connessioen al server..")
@@ -80,6 +81,5 @@ if __name__ == '__main__':
 
     server = ("localhost", 15000)   #socket server information
 
-    Gui_interface.gui()          #Start Gui interface
+    create_socket_client(server)  # Create socket client that will connect to socket server
 
-    create_socket_client(server)    #Create socket client that will connect to socket server
