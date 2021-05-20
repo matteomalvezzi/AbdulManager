@@ -117,6 +117,7 @@ def get_id_impiego ( nome_impiego ):
 # ___________________________________________________INSERT SEDE, REPARTO, IMPIEGO___________________________________________________
 def insert_sede ( info_sede ):
     cursor = db_connection.cursor()
+    info_sede = eval(info_sede)
     query= "INSERT INTO abdulmanager.sedi VALUES (null, '" + sql_safe(info_sede["indirizzo"]) + "', '" + sql_safe(info_sede["citta"]) + "', '" + sql_safe(info_sede["provincia"]) + "', '" + sql_safe(info_sede["cap"])+ "')"
     cursor.execute(query)
 
@@ -138,9 +139,9 @@ def get_dipendente ( nome, cognome):
     result_set = cursor.fetchall()
     return result_set
 
-def get_dipendente_cf ( cofice_fiscale ):
+def get_dipendente_cf ( codice_fiscale ):
     cursor = db_connection.cursor()
-    query = "SELECT * FROM abdulmanager.dipendente d INNER JOIN reparto_dipendenti rd ON d.id = rd.id_dipendente WHERE d.codice_fiscale = '" + sql_safe(cofice_fiscale) + "';"
+    query = "SELECT * FROM abdulmanager.dipendente d INNER JOIN reparto_dipendenti rd ON d.id = rd.id_dipendente WHERE d.codice_fiscale = '" + sql_safe(codice_fiscale) + "';"
     cursor.execute(query)
     result_set = cursor.fetchall()
     return result_set
@@ -148,10 +149,13 @@ def get_dipendente_cf ( cofice_fiscale ):
 # ___________________________________________________INSERT DIPENDENTE ___________________________________________________
 def insert_dipendente ( dipendente_info, impiego_id ):
     cursor = db_connection.cursor()
-    query = "INSERT INTO abdulmanager.dipendente VALUES (null, '" + sql_safe(dipendente_info["nome"]) + "', '" + sql_safe(dipendente_info["cognome"]) + "', '" + sql_safe(dipendente_info["sesso"]) + "', '" + sql_safe(dipendente_info["data_nascita"]) + "', '" + sql_safe(dipendente_info["luogo"]) + "', '" + sql_safe(dipendente_info["cf"]) + "', '" + impiego_id + "', '" + sql_safe(dipendente_info["data_assunzione"]) + "', '" + sql_safe(dipendente_info["stipendio"]) + "');"
-    cursor.execute(query)
-
-
+    print(sql_safe(dipendente_info["nome"]))
+    try:
+        query = "INSERT INTO abdulmanager.dipendente VALUES (null, '" + sql_safe(dipendente_info["nome"]) + "', '" + sql_safe(dipendente_info["cognome"]) + "', '" + sql_safe(dipendente_info["sesso"]) + "', '" + sql_safe(dipendente_info["data_nascita"]) + "', '" + sql_safe(dipendente_info["luogo"]) + "', '" + sql_safe(dipendente_info["cf"]) + "', '" + str(impiego_id) + "', '" + sql_safe(dipendente_info["data_assunzione"]) + "', '" + sql_safe(dipendente_info["stipendio"]) + "');"
+        print("Query eseguita: " + str(query))
+        cursor.execute(query)
+    except Exception as e:
+        print(e)
 
 # ___________________________________________________Get Command ___________________________________________________
 
@@ -167,11 +171,13 @@ def get_command (socket_server, client_address, conn_counter):
             print("Richiesta lista sedi")
             lista_sedi = str(get_all_sedi())
             socket_server.send(lista_sedi.encode())
-            print("Invio fatto!")
 
         elif command == "get_all_impieghi":
             # ------------------------------RICHIESTA LISTA IMPIEGHI------------------------------
-            pass
+            print("Richiesta lista impieghi")
+            lista_impieghi = str(get_all_impieghi())
+            socket_server.send(lista_impieghi.encode())
+
         elif command == "get_all_reparti":
             # ------------------------------RICHIESTA LISTA REPARTI DI UNA SEDE------------------------------
             print("Richiesta lista reparti con sede")
@@ -184,22 +190,80 @@ def get_command (socket_server, client_address, conn_counter):
             socket_server.send(lista_reparti.encode())
 
         elif command == "insert_sede":
-            # visualizza dipendente
-            pass
+            # ------------------------------INSERIMENTO SEDE------------------------------
+            print("Richiesta di insermento di una nuova sede")
+            socket_server.send("pronto".encode())
+            sede_data = socket_server.recv(4096).decode()
+
+            try:
+                insert_sede(sede_data)
+                socket_server.send("inserimento completato".encode())
+            except Exception as e:
+                socket_server.send("inserimneto bloccato".encode())
+
         elif command == "insert_reparto":
-            # visualizza dipendente
-            pass
+            # ------------------------------INSERIMENTO REPARTO------------------------------
+            print("Richiesta di insermento di una nuovo reparto")
+            socket_server.send("pronto".encode())
+            reparto_data = socket_server.recv(4096).decode()
+
+            try:
+                insert_sede(reparto_data)
+                socket_server.send("inserimento completato".encode())
+            except Exception as e:
+                socket_server.send("inserimneto bloccato".encode())
+
         elif command == "insert_impiego":
-            # visualizza dipendente
-            pass
+            # ------------------------------INSERIMENTO IMPIEGO------------------------------
+            print("Richiesta di insermento di un nuovo impiego")
+            socket_server.send("pronto".encode())
+            impiego_data = socket_server.recv(4096).decode()
+
+            try:
+                insert_impiego( impiego_data )
+                socket_server.send("inserimento completato".encode())
+            except Exception as e:
+                socket_server.send("inserimneto bloccato".encode())
+
         elif command == "insert_dipendente":
-            # visualizza dipendente
-            pass
-        elif command == "get_dipendente":
-            # visualizza dipendente
-            pass
+            # ------------------------------INSERIMENTO DIPENDENTE------------------------------
+            print("Richiesta di insermento di un nuovo dipendente")
+            socket_server.send("pronto".encode())
+            dipendente_data = socket_server.recv(4096).decode()
+
+            try:
+                dipendente_data = eval(dipendente_data)
+                insert_dipendente(dipendente_data, get_id_impiego(dipendente_data["impiego"]))
+                socket_server.send("inserimento completato".encode())
+            except Exception as e:
+                print(e)
+                socket_server.send("inserimneto bloccato".encode())
+
+        elif command == "get_dipendente_nome":
+            # ------------------------------GET DIPENDENTE WITH NAME AND SURNAME  ------------------------------
+            print("Richiesta di insermento di un nuovo dipendente con nome e cognome")
+            socket_server.send("pronto".encode())
+            dipendente_info = socket_server.recv(4096).decode()
+            dipendente_info_list = dipendente_info.split(" ")
+            try:
+                nome = dipendente_info_list[0]
+                cognome = dipendente_info_list[1]
+                dipendente_data = str( get_dipendente( nome, cognome ) )
+                socket_server.send(dipendente_data.encode())
+            except Exception as e:
+                socket_server.send("Dati non disponibili".encode())
+
         elif command == "get_dipendente_cf":
-            # visualizza dipendente
+            # ------------------------------GET DIPENDENTE WITH CF ------------------------------
+            print("Richiesta di insermento di un nuovo dipendente con il codice fiscale")
+            socket_server.send("pronto".encode())
+            cf = socket_server.recv(4096).decode()
+
+            try:
+                dipendente_data = str(get_dipendente_cf(codice_fiscale=cf))
+                socket_server.send(dipendente_data.encode())
+            except Exception as e:
+                socket_server.send("Dati non disponibili".encode())
             pass
 
 

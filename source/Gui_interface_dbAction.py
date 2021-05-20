@@ -72,21 +72,32 @@ def create():  # add someone to the db
 
     #Get dropdown data
 
-    print("Ciao")
+    # print("Ciao")
+    #
+    # lista_sedi = cl.getSedi(cl_sock)
+    #
+    # sede1 = lista_sedi[0]
+    # for sede in lista_sedi:
+    #     #set value of dropdown section
+    #
+    #     pass
+    # sede1_string = str(sede1[0]) + "," + str(sede1[1]) + "," + str(sede1[2])
 
-    lista_sedi = cl.getSedi(cl_sock)
+    # print(sede1_string)
+    #
+    # lista_reparti_sede_1 = cl.getReparti( cl_sock, sede1_string)
+    # print(lista_reparti_sede_1)
 
-    sede1 = lista_sedi[0]
-    for sede in lista_sedi:
-        #set value of dropdown section
+    # lista_impieghi = cl.getImpieghi(sock_client=cl_sock)
+    # print(lista_impieghi)
 
-        pass
-    sede1_string = str(sede1[0]) + "," + str(sede1[1]) + "," + str(sede1[2])
+    # nuovo_dipendente ={"nome": "Mattia", "cognome": "Veroni", "sesso": "M", "data_nascita": "2001-11-24", "luogo":"Via pierino 2", "cf": "GIACMOSPA45945DJ", "data_assunzione": "2020-10-18", "stipendio": "1500.32", "impiego": "Commerciale"}
+    #
+    # cl.insertDipendente( cl_sock, nuovo_dipendente)
 
-    print(sede1_string)
+    nuova_sede = {"indirizzo": "Via Papa Giovanni 2", "citta": "Carpi", "provincia": "Modena", "cap": "41012"}
 
-    lista_reparti_sede_1 = cl.getReparti( cl_sock, sede1_string)
-    print(lista_reparti_sede_1)
+    cl.insertSede( cl_sock, nuova_sede )
 
     # ------------------gender-----
     def get_gender():

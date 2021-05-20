@@ -5,13 +5,13 @@ import sys
 from source import Gui_interface
 
 #___________________________________________________ Do command  ___________________________________________________
-def getSedi( sock_client ):
+def getSedi( sock_client ):     #Get list of sedi from server
     sock_client.send("get_all_sedi".encode())
     response = sock_client.recv(4096).decode()
     lista_sedi = eval(response)
     return lista_sedi
 
-def getReparti( sock_client, sede ):
+def getReparti( sock_client, sede ): #Get list of reparti from server with information about sede
     sock_client.send("get_all_reparti".encode())
     response = sock_client.recv(4096).decode()
     if response == "pronto":
@@ -21,19 +21,71 @@ def getReparti( sock_client, sede ):
         lista_reparti = eval(response)
 
         return lista_reparti
+def getImpieghi( sock_client ): #Get list of impieghi from server
+    sock_client.send("get_all_impieghi".encode())
+    response = sock_client.recv(4096).decode()
+    lista_sedi = eval(response)
+    return lista_sedi
 
+def insertDipendente( sock_client, new_dipendente ):    #Insert dipendente and send to server dipendente's informations
+    sock_client.send("insert_dipendente".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(str(new_dipendente).encode())
 
-def insertDipendente( new_dipendente ):
-    #1. check che tutti i dati siano integri
-    #2. send verso il server dei dati
-    pass
+        response = sock_client.recv(4096).decode()
+        print(response)
 
-def update ( dati ):
-    #1. controllo
-    #2. inserisco
-    pass
+def insertSede( sock_client, sede ):  #Insert sede
+    sock_client.send("insert_sede".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(str(sede).encode())
 
+        response = sock_client.recv(4096).decode()
+        print(response)
 
+def insertReparto( sock_client, reparto): #Insert reparto
+    sock_client.send("insert_reparto".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(reparto.encode())
+
+        response = sock_client.recv(4096).decode()
+        print(response)
+
+def insertImpiego( sock_client, impiego):   #Insert impiego
+    sock_client.send("insert_impiego".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(impiego.encode())
+
+        response = sock_client.recv(4096).decode()
+        print(response)
+
+def getDipendenteNome ( sock_client, nome, cognome)  :
+    sock_client.send("get_dipendente_nome".encode())
+    response = sock_client.recv(4096).decode()
+
+    if response == "pronto":
+        info_dip = str(nome) + " " + str(cognome)
+        sock_client.send(info_dip.encode())
+
+        response = sock_client.recv(4096).decode()
+        print(response)
+        info_dipendente = eval(response)
+        return info_dipendente
+
+def getDipendenteCf(sock_client, cf):
+    sock_client.send("get_dipendente_cf".encode())
+    response = sock_client.recv(4096).decode()
+
+    if response == "pronto":
+        sock_client.send(cf.encode())
+        response = sock_client.recv(4096).decode()
+        print(response)
+        info_dipendente = eval(response)
+        return info_dipendente
 
 #___________________________________________________ Send for command to socket server  ___________________________________________________
 def send_command_to_server(client_sock, command):
