@@ -19,8 +19,9 @@ def getReparti( sock_client, sede ): #Get list of reparti from server with infor
 
         response = sock_client.recv(4096).decode()
         lista_reparti = eval(response)
-
+        print("Ecco i reparti di questa sede: " + str(lista_reparti))
         return lista_reparti
+
 def getImpieghi( sock_client ): #Get list of impieghi from server
     sock_client.send("get_all_impieghi".encode())
     response = sock_client.recv(4096).decode()
@@ -83,9 +84,33 @@ def getDipendenteCf(sock_client, cf):
     if response == "pronto":
         sock_client.send(cf.encode())
         response = sock_client.recv(4096).decode()
-        print(response)
+
         info_dipendente = eval(response)
         return info_dipendente
+
+def getInfoReparto(sock_client, id_reparto):
+    sock_client.send("get_reparto_name".encode())
+    response = sock_client.recv(4096).decode()
+
+    if response == "pronto":
+        sock_client.send(str(id_reparto).encode())
+        response = sock_client.recv(4096).decode()
+
+        info_reparto = eval(response)
+        print(info_reparto)
+        return info_reparto
+
+def getInfoSede(sock_client, id_sede):
+    sock_client.send("get_sede_name".encode())
+    response = sock_client.recv(4096).decode()
+
+    if response == "pronto":
+        sock_client.send(str(id_sede).encode())
+        response = sock_client.recv(4096).decode()
+
+        info_sede = eval(response)
+        print(info_sede)
+        return info_sede
 
 #___________________________________________________ Send for command to socket server  ___________________________________________________
 def send_command_to_server(client_sock, command):

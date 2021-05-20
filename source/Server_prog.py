@@ -64,7 +64,7 @@ def get_password_from_DB(username):
 # ___________________________________________________GET IMPIEGHI, SEDI, REPARTI ___________________________________________________
 def get_all_impieghi ():
     cursor = db_connection.cursor()
-    query= "SELECT * FROM impieghi;"
+    query= "SELECT * FROM abdulmanager.impieghi;"
     cursor.execute(query)
     result_set = cursor.fetchall()
     list_impieghi = []
@@ -74,7 +74,7 @@ def get_all_impieghi ():
 
 def get_all_sedi ():
     cursor = db_connection.cursor()
-    query= "SELECT * FROM sedi;"
+    query= "SELECT * FROM abdulmanager.sedi;"
     cursor.execute(query)
     result_set = cursor.fetchall()
     lista_sedi = []
@@ -88,7 +88,7 @@ def get_all_sedi ():
 
 def get_all_reparti ( id ):
     cursor = db_connection.cursor()
-    query= "SELECT * FROM reparti WHERE id_sede = '" + str(id) +"';"
+    query= "SELECT * FROM abdulmanager.reparti WHERE id_sede = '" + str(id) +"';"
     cursor.execute(query)
     result_set = cursor.fetchall()
     lista_reparti = []
@@ -119,7 +119,17 @@ def insert_sede ( info_sede ):
     cursor = db_connection.cursor()
     info_sede = eval(info_sede)
     query= "INSERT INTO abdulmanager.sedi VALUES (null, '" + sql_safe(info_sede["indirizzo"]) + "', '" + sql_safe(info_sede["citta"]) + "', '" + sql_safe(info_sede["provincia"]) + "', '" + sql_safe(info_sede["cap"])+ "')"
-    cursor.execute(query)
+    print(query)
+    try:
+        #cursor.execute("INSERT INTO abdulmanager.sedi(indirizzo, citta, provincia, cap) VALUES (? , ? , ? , ?)", (sql_safe(info_sede["indirizzo"]), sql_safe(info_sede["citta"]), sql_safe(info_sede["provincia"]), sql_safe(info_sede["cap"])))
+        #cursor.execute("INSERT INTO abdulmanager.sedi(indirizzo, citta, provincia, cap) VALUES (? , ? , ? , ?)", (info_sede["indirizzo"], info_sede["citta"], info_sede["provincia"], info_sede["cap"]))
+        cursor.execute(query)
+        print("inserimento sede andato a buon fine")
+    except Exception as e:
+        print(e)
+        print("errore nell'inserimento di una sede")
+
+
 
 def insert_reparto ( info_reparto ):
     cursor = db_connection.cursor()
@@ -137,14 +147,20 @@ def get_dipendente ( nome, cognome):
     query = "SELECT * FROM abdulmanager.dipendente d INNER JOIN reparto_dipendenti rd ON d.id = rd.id_dipendente WHERE d.nome = '" + sql_safe(nome) + "' AND d.cognome = '" + sql_safe(cognome) + "';"
     cursor.execute(query)
     result_set = cursor.fetchall()
-    return result_set
+    dipendente_data= list(result_set[0])
+    dipendente_data[4] = dipendente_data[4].strftime("%Y-%m-%d")
+    dipendente_data[8] = dipendente_data[8].strftime("%Y-%m-%d")
+    return dipendente_data
 
 def get_dipendente_cf ( codice_fiscale ):
     cursor = db_connection.cursor()
     query = "SELECT * FROM abdulmanager.dipendente d INNER JOIN reparto_dipendenti rd ON d.id = rd.id_dipendente WHERE d.codice_fiscale = '" + sql_safe(codice_fiscale) + "';"
     cursor.execute(query)
     result_set = cursor.fetchall()
-    return result_set
+    dipendente_data= list(result_set[0])
+    dipendente_data[4] = dipendente_data[4].strftime("%Y-%m-%d")
+    dipendente_data[8] = dipendente_data[8].strftime("%Y-%m-%d")
+    return dipendente_data
 
 # ___________________________________________________INSERT DIPENDENTE ___________________________________________________
 def insert_dipendente ( dipendente_info, impiego_id ):
@@ -154,6 +170,30 @@ def insert_dipendente ( dipendente_info, impiego_id ):
         query = "INSERT INTO abdulmanager.dipendente VALUES (null, '" + sql_safe(dipendente_info["nome"]) + "', '" + sql_safe(dipendente_info["cognome"]) + "', '" + sql_safe(dipendente_info["sesso"]) + "', '" + sql_safe(dipendente_info["data_nascita"]) + "', '" + sql_safe(dipendente_info["luogo"]) + "', '" + sql_safe(dipendente_info["cf"]) + "', '" + str(impiego_id) + "', '" + sql_safe(dipendente_info["data_assunzione"]) + "', '" + sql_safe(dipendente_info["stipendio"]) + "');"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
+    except Exception as e:
+        print(e)
+
+# ___________________________________________________GET NAME OF REPARTO ___________________________________________________
+def get_single_reparto( id ):
+    cursor = db_connection.cursor()
+    try:
+        search_query = "SELECT nome_reparto, id_sede FROM abdulmanager.reparti WHERE id = '" + id + "';"
+        cursor.execute(search_query)
+        result_set = cursor.fetchall()
+        print( str(result_set[0][0]) + str(result_set[0][1]))
+        return result_set[0]
+    except Exception as e:
+        print(e)
+
+# ___________________________________________________GET INFO OF SEDE ___________________________________________________
+def get_single_sede( id ):
+    cursor = db_connection.cursor()
+    try:
+        search_query = "SELECT * FROM abdulmanager.sedi WHERE id = '" + id + "';"
+        cursor.execute(search_query)
+        result_set = cursor.fetchall()
+        print(result_set[0])
+        return result_set[0]
     except Exception as e:
         print(e)
 
@@ -248,7 +288,9 @@ def get_command (socket_server, client_address, conn_counter):
             try:
                 nome = dipendente_info_list[0]
                 cognome = dipendente_info_list[1]
-                dipendente_data = str( get_dipendente( nome, cognome ) )
+                dipendente_data = str(get_dipendente( nome, cognome ))
+
+                print("Ecco cosa ho ricevuto dal metodo: " + str(dipendente_data))
                 socket_server.send(dipendente_data.encode())
             except Exception as e:
                 socket_server.send("Dati non disponibili".encode())
@@ -265,9 +307,22 @@ def get_command (socket_server, client_address, conn_counter):
             except Exception as e:
                 socket_server.send("Dati non disponibili".encode())
             pass
+        elif command == "get_reparto_name":
+            # ------------------------------GET NAME OF REPARTO ------------------------------
+            print("Richiesta nome di un reparto")
+            socket_server.send("pronto".encode())
+            id_reparto = socket_server.recv(4096).decode()
 
+            info_reparto = str(get_single_reparto( id_reparto ))
+            socket_server.send(info_reparto.encode())
+        elif command == "get_sede_name":
+            # ------------------------------GET NAME OF SEDE WITH ID ------------------------------
+            print("Richiesta di info su una sede")
+            socket_server.send("pronto".encode())
+            id_sede = socket_server.recv(4096).decode()
 
-
+            info_sede = str(get_single_sede( id_sede ))
+            socket_server.send(info_sede.encode())
 
 #___________________________________________________ Check password ___________________________________________________
 def check_password(socket_server):
