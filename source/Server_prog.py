@@ -163,13 +163,19 @@ def get_dipendente_cf ( codice_fiscale ):
     return dipendente_data
 
 # ___________________________________________________INSERT DIPENDENTE ___________________________________________________
-def insert_dipendente ( dipendente_info, impiego_id ):
+def insert_dipendente ( dipendente_info, impiego_id, reparto_id ):
     cursor = db_connection.cursor()
     print(sql_safe(dipendente_info["nome"]))
     try:
         query = "INSERT INTO abdulmanager.dipendente VALUES (null, '" + sql_safe(dipendente_info["nome"]) + "', '" + sql_safe(dipendente_info["cognome"]) + "', '" + sql_safe(dipendente_info["sesso"]) + "', '" + sql_safe(dipendente_info["data_nascita"]) + "', '" + sql_safe(dipendente_info["luogo"]) + "', '" + sql_safe(dipendente_info["cf"]) + "', '" + str(impiego_id) + "', '" + sql_safe(dipendente_info["data_assunzione"]) + "', '" + sql_safe(dipendente_info["stipendio"]) + "');"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
+        get_id_query = "SELECT id FROM abdulmanager.dipendente WHERE codice_fiscale= '" + sql_safe(dipendente_info["cf"]) + "';"
+        cursor.execute(get_id_query)
+        result_set = cursor.fetchall()
+        print("ID DEL NUOVO DIPENDENTE: " + str(result_set[0][0]))
+        cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + result_set[0][0] + "', '" + reparto_id + "');"
+        cursor.execute(cross_query)
     except Exception as e:
         print(e)
 
@@ -197,6 +203,45 @@ def get_single_sede( id ):
     except Exception as e:
         print(e)
 
+# ___________________________________________________GET IMPIEGO ___________________________________________________
+def get_impiego( id ):
+    cursor = db_connection.cursor()
+    try:
+        search_query = "SELECT impiego FROM abdulmanager.impieghi WHERE id = '" + id + "';"
+        cursor.execute(search_query)
+        result_set = cursor.fetchall()
+        print(result_set[0])
+        return result_set[0]
+    except Exception as e:
+        print(e)
+
+# ___________________________________________________UPDATE ___________________________________________________
+def updateDipendente ( dipendente_info, impiego_id, dipendente_id, reparto_id):
+    cursor = db_connection.cursor()
+    print(sql_safe(dipendente_info["nome"]))
+    try:
+        query = "UPDATE abdulmanager.dipendente SET  nome = '" + sql_safe(dipendente_info["nome"]) + "', cognome = '" + sql_safe(dipendente_info["cognome"]) + "', sesso = '" + sql_safe(dipendente_info["sesso"]) + "', data_di_nascita = '" + sql_safe(dipendente_info["sesso"]) + "', luogo_di_nascita = '" + sql_safe(dipendente_info["luogo"]) + "', codice_fiscale = '" + sql_safe(dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(dipendente_info["stipendio"]) + "' WHERE id = '" + dipendente_id + "';"
+        print("Query eseguita: " + str(query))
+        cursor.execute(query)
+        get_id_query = "SELECT id FROM abdulmanager.dipendente WHERE codice_fiscale= '" + sql_safe(dipendente_info["cf"]) + "';"
+        cursor.execute(get_id_query)
+        result_set = cursor.fetchall()
+        cross_query = "UPDATE abdulmanager.reparto_dipendenti SET id_reparto = '" + reparto_id + "' WHERE id_dipendente = '" + result_set[0][0] + "';"
+        cursor.execute(cross_query)
+    except Exception as e:
+        print(e)
+
+# ___________________________________________________ DELETE DIPENDENTE ___________________________________________________
+def deleteDipendente ( dipendente_id ):
+    cursor = db_connection.cursor()
+    try:
+        query = "DELETE FROM abdulmanager.dipendente WHERE id = '" + dipendente_id +"';"
+        print("Query eseguita: " + str(query))
+        cursor.execute(query)
+        cross_query = "DELETE FROM abdulmanager.reparto_dipendenti WHERE id_dipendente = '" + dipendente_id + "';"
+        cursor.execute(cross_query)
+    except Exception as e:
+        print(e)
 # ___________________________________________________Get Command ___________________________________________________
 
 def get_command (socket_server, client_address, conn_counter):
@@ -323,6 +368,42 @@ def get_command (socket_server, client_address, conn_counter):
 
             info_sede = str(get_single_sede( id_sede ))
             socket_server.send(info_sede.encode())
+
+        elif command == "get_name_impiego":
+            # ------------------------------GET NAME OF IMPIEGO ------------------------------
+            print("Richiesta di info su un impiego")
+            socket_server.send("pronto".encode())
+            id_impiego = socket_server.recv(4096).decode()
+
+            info_impiego = str(get_impiego(id_impiego))
+            socket_server.send(info_impiego.encode())
+        elif command == "update_dipendente":
+            # ------------------------------UPDATE DIPENDENTE ------------------------------
+            print("Richiesta di aggiornamento dei dati di un dipendente")
+            socket_server.send("pronto".encode())
+            dipendente_data = socket_server.recv(4096).decode()
+
+            try:
+                dipendente_data = eval(dipendente_data)
+                updateDipendente(dipendente_data, get_id_impiego(dipendente_data["impiego"], dipendente_data["id"]))
+                socket_server.send("inserimento completato".encode())
+            except Exception as e:
+                print(e)
+                socket_server.send("inserimneto bloccato".encode())
+
+        elif command == "delete_dipendente":
+            # ------------------------------REMOVE AND DELETE DIPENDENTE ------------------------------
+            print("Richiesta di eliminazione di un dipendente")
+            socket_server.send("pronto".encode())
+            id_dipendente = socket_server.recv(4096).decode()
+
+            try:
+                deleteDipendente( id_dipendente )
+                socket_server.send("eliminazione completato".encode())
+            except Exception as e:
+                print(e)
+                socket_server.send("eliminazione bloccato".encode())
+
 
 #___________________________________________________ Check password ___________________________________________________
 def check_password(socket_server):

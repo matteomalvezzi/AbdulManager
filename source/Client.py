@@ -112,6 +112,35 @@ def getInfoSede(sock_client, id_sede):
         print(info_sede)
         return info_sede
 
+def getInfoImpiego(sock_client, id_impiego):
+    sock_client.send("get_name_impiego".encode())
+    response = sock_client.recv(4096).decode()
+
+    if response == "pronto":
+        sock_client.send(str(id_impiego).encode())
+        response = sock_client.recv(4096).decode()
+
+        info_impiego = eval(response)
+        print(info_impiego)
+        return info_impiego
+
+def updateDipendente( sock_client, exist_dipendente_data ):    #Update dipendente and send to server dipendente's informations
+    sock_client.send("update_dipendente".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(str(exist_dipendente_data).encode())
+
+        response = sock_client.recv(4096).decode()
+        print(response)
+
+def deleteDipendente( sock_client, id_dipendente ):
+    sock_client.send("delete_dipendente".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(str(id_dipendente).encode())
+
+        response = sock_client.recv(4096).decode()
+        print(response)
 #___________________________________________________ Send for command to socket server  ___________________________________________________
 def send_command_to_server(client_sock, command):
 

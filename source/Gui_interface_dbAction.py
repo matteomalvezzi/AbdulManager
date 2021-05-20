@@ -97,6 +97,9 @@ def create():  # add someone to the db
     #
     # cl.insertDipendente( cl_sock, nuovo_dipendente)
 
+    impiego = cl.getInfoImpiego( cl_sock, 1)
+    print("Ecco l'impiego: " + impiego[0])
+
     lista_sedi = cl.getSedi(cl_sock)
     print("listaSedi=",lista_sedi)
     lista_sedi_stringhe = []
