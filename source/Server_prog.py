@@ -15,7 +15,7 @@ def connect_to_Database():
     try:
         db_connection = mariadb.connect(
             user="root",
-            password="",
+            password="7637",
             host="localhost",
             port=3306,
             database="abdulmanager"
@@ -178,8 +178,8 @@ def insert_dipendente ( dipendente_info, impiego_id, reparto_id ):
         cursor.execute(get_id_query)
         result_set = cursor.fetchall()
         print("ID DEL NUOVO DIPENDENTE: " + str(result_set[0][0]))
-        cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + result_set[0][
-            0] + "', '" + reparto_id + "');"
+        cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + sql_safe(str(result_set[0][0])) + "', '" + sql_safe(str(reparto_id)) + "');"
+        print("Ecco la query: " + cross_query)
         cursor.execute(cross_query)
     except Exception as e:
         print(e)
@@ -228,13 +228,13 @@ def updateDipendente ( dipendente_info, impiego_id, dipendente_id, reparto_id):
     cursor = db_connection.cursor()
     print(sql_safe(dipendente_info["nome"]))
     try:
-        query = "UPDATE abdulmanager.dipendente SET  nome = '" + sql_safe(dipendente_info["nome"]) + "', cognome = '" + sql_safe(dipendente_info["cognome"]) + "', sesso = '" + sql_safe(dipendente_info["sesso"]) + "', data_di_nascita = '" + sql_safe(dipendente_info["sesso"]) + "', luogo_di_nascita = '" + sql_safe(dipendente_info["luogo"]) + "', codice_fiscale = '" + sql_safe(dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(dipendente_info["stipendio"]) + "' WHERE id = '" + dipendente_id + "';"
+        query = "UPDATE abdulmanager.dipendente SET  nome = '" + sql_safe(dipendente_info["nome"]) + "', cognome = '" + sql_safe(dipendente_info["cognome"]) + "', sesso = '" + sql_safe(dipendente_info["sesso"]) + "', data_di_nascita = '" + sql_safe(dipendente_info["data_nascita"]) + "', luogo_di_nascita = '" + sql_safe(dipendente_info["luogo"]) + "', codice_fiscale = '" + sql_safe(dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(dipendente_info["stipendio"]) + "' WHERE id = '" + sql_safe(str(dipendente_id)) + "';"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
         get_id_query = "SELECT id FROM abdulmanager.dipendente WHERE codice_fiscale= '" + sql_safe(dipendente_info["cf"]) + "';"
         cursor.execute(get_id_query)
         result_set = cursor.fetchall()
-        cross_query = "UPDATE abdulmanager.reparto_dipendenti SET id_reparto = '" + reparto_id + "' WHERE id_dipendente = '" + result_set[0][0] + "';"
+        cross_query = "UPDATE abdulmanager.reparto_dipendenti SET id_reparto = '" + sql_safe(str(reparto_id)) + "' WHERE id_dipendente = '" + sql_safe(str(result_set[0][0])) + "';"
         cursor.execute(cross_query)
     except Exception as e:
         print(e)

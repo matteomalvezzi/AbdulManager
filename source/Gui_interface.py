@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 
-from AbdulManager.AbdulManager.source import Client, Gui_interface_dbAction
+from source import Client, Gui_interface_dbAction
 
 
 # Show message log box

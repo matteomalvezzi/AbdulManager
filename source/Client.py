@@ -1,7 +1,7 @@
 # ___________________________________________________Import some libraries
 import socket as sock
 import sys
-from AbdulManager.AbdulManager.source import Gui_interface
+from source import Gui_interface
 
 
 #___________________________________________________ Do command  ___________________________________________________
