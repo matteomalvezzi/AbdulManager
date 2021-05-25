@@ -1,9 +1,7 @@
-import sys
 from tkinter import *
 from tkinter import messagebox
 
-from source import Gui_interface_dbAction
-from source import Client
+from AbdulManager.AbdulManager.source import Client, Gui_interface_dbAction
 
 
 # Show message log box

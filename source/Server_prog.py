@@ -15,11 +15,12 @@ def connect_to_Database():
     try:
         db_connection = mariadb.connect(
             user="root",
-            password="7637",
+            password="",
             host="localhost",
             port=3306,
             database="abdulmanager"
         )
+        db_connection.autocommit =True  #FRONTEND MONKY <-------<------<-----<----
     except mariadb.Error as e:
         db_connection = None
         connect_to_Database()
@@ -86,14 +87,15 @@ def get_all_sedi ():
         lista_sedi.append(sede)
     return lista_sedi
 
-def get_all_reparti ( id ):
+def get_all_reparti ( id ):  #FRONTEND MONKEY EDITED THIS CODE BRO BECOUSE I NEEDED THE INDEX of THE "department"
     cursor = db_connection.cursor()
     query= "SELECT * FROM abdulmanager.reparti WHERE id_sede = '" + str(id) +"';"
     cursor.execute(query)
     result_set = cursor.fetchall()
     lista_reparti = []
     for row in result_set:
-        lista_reparti.append(row[1])
+        row_list=list(row)
+        lista_reparti.append(str(row_list))#------FRONTEND MONKEY--->i edit here bro
     return lista_reparti
 
 def get_id_sede ( indirizzo, citta, provincia ):
@@ -170,11 +172,14 @@ def insert_dipendente ( dipendente_info, impiego_id, reparto_id ):
         query = "INSERT INTO abdulmanager.dipendente VALUES (null, '" + sql_safe(dipendente_info["nome"]) + "', '" + sql_safe(dipendente_info["cognome"]) + "', '" + sql_safe(dipendente_info["sesso"]) + "', '" + sql_safe(dipendente_info["data_nascita"]) + "', '" + sql_safe(dipendente_info["luogo"]) + "', '" + sql_safe(dipendente_info["cf"]) + "', '" + str(impiego_id) + "', '" + sql_safe(dipendente_info["data_assunzione"]) + "', '" + sql_safe(dipendente_info["stipendio"]) + "');"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
-        get_id_query = "SELECT id FROM abdulmanager.dipendente WHERE codice_fiscale= '" + sql_safe(dipendente_info["cf"]) + "';"
+
+        get_id_query = "SELECT id FROM abdulmanager.dipendente WHERE codice_fiscale= '" + sql_safe(
+            dipendente_info["cf"]) + "';"
         cursor.execute(get_id_query)
         result_set = cursor.fetchall()
         print("ID DEL NUOVO DIPENDENTE: " + str(result_set[0][0]))
-        cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + result_set[0][0] + "', '" + reparto_id + "');"
+        cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + result_set[0][
+            0] + "', '" + reparto_id + "');"
         cursor.execute(cross_query)
     except Exception as e:
         print(e)
@@ -203,6 +208,8 @@ def get_single_sede( id ):
     except Exception as e:
         print(e)
 
+# ___________________________________________________Get Command ___________________________________________________
+
 # ___________________________________________________GET IMPIEGO ___________________________________________________
 def get_impiego( id ):
     cursor = db_connection.cursor()
@@ -217,6 +224,7 @@ def get_impiego( id ):
 
 # ___________________________________________________UPDATE ___________________________________________________
 def updateDipendente ( dipendente_info, impiego_id, dipendente_id, reparto_id):
+    print("sono dentro ")
     cursor = db_connection.cursor()
     print(sql_safe(dipendente_info["nome"]))
     try:
@@ -318,7 +326,7 @@ def get_command (socket_server, client_address, conn_counter):
 
             try:
                 dipendente_data = eval(dipendente_data)
-                insert_dipendente(dipendente_data, get_id_impiego(dipendente_data["impiego"]))
+                insert_dipendente(dipendente_data, get_id_impiego(dipendente_data["impiego"]),dipendente_data["reparto_id"]) #--FRONTEND MONKEY EDITED HERE
                 socket_server.send("inserimento completato".encode())
             except Exception as e:
                 print(e)
@@ -326,13 +334,15 @@ def get_command (socket_server, client_address, conn_counter):
 
         elif command == "get_dipendente_nome":
             # ------------------------------GET DIPENDENTE WITH NAME AND SURNAME  ------------------------------
-            print("Richiesta di insermento di un nuovo dipendente con nome e cognome")
+            print("Richiesta di lettura dipendente con nome e cognome")
             socket_server.send("pronto".encode())
             dipendente_info = socket_server.recv(4096).decode()
             dipendente_info_list = dipendente_info.split(" ")
             try:
                 nome = dipendente_info_list[0]
+                print("nome'"+nome)
                 cognome = dipendente_info_list[1]
+                print("cognome'"+cognome)
                 dipendente_data = str(get_dipendente( nome, cognome ))
 
                 print("Ecco cosa ho ricevuto dal metodo: " + str(dipendente_data))
@@ -342,7 +352,7 @@ def get_command (socket_server, client_address, conn_counter):
 
         elif command == "get_dipendente_cf":
             # ------------------------------GET DIPENDENTE WITH CF ------------------------------
-            print("Richiesta di insermento di un nuovo dipendente con il codice fiscale")
+            print("Richiesta di lettura di un nuovo dipendente con il codice fiscale")
             socket_server.send("pronto".encode())
             cf = socket_server.recv(4096).decode()
 
@@ -377,6 +387,7 @@ def get_command (socket_server, client_address, conn_counter):
 
             info_impiego = str(get_impiego(id_impiego))
             socket_server.send(info_impiego.encode())
+
         elif command == "update_dipendente":
             # ------------------------------UPDATE DIPENDENTE ------------------------------
             print("Richiesta di aggiornamento dei dati di un dipendente")
@@ -385,7 +396,8 @@ def get_command (socket_server, client_address, conn_counter):
 
             try:
                 dipendente_data = eval(dipendente_data)
-                updateDipendente(dipendente_data, get_id_impiego(dipendente_data["impiego"], dipendente_data["id"]))
+                print("dipendenti data"+dipendente_data["impiego"])
+                updateDipendente(dipendente_data, get_id_impiego(dipendente_data["impiego"]), dipendente_data["id"],dipendente_data["reparto_id"])
                 socket_server.send("inserimento completato".encode())
             except Exception as e:
                 print(e)
@@ -398,7 +410,7 @@ def get_command (socket_server, client_address, conn_counter):
             id_dipendente = socket_server.recv(4096).decode()
 
             try:
-                deleteDipendente( id_dipendente )
+                deleteDipendente(id_dipendente)
                 socket_server.send("eliminazione completato".encode())
             except Exception as e:
                 print(e)

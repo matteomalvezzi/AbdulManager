@@ -1,8 +1,8 @@
 # ___________________________________________________Import some libraries
-import pickle
 import socket as sock
 import sys
-from source import Gui_interface
+from AbdulManager.AbdulManager.source import Gui_interface
+
 
 #___________________________________________________ Do command  ___________________________________________________
 def getSedi( sock_client ):     #Get list of sedi from server
@@ -70,6 +70,7 @@ def getDipendenteNome ( sock_client, nome, cognome)  :
 
     if response == "pronto":
         info_dip = str(nome) + " " + str(cognome)
+        print("'info dip'"+info_dip)
         sock_client.send(info_dip.encode())
 
         response = sock_client.recv(4096).decode()
@@ -112,6 +113,7 @@ def getInfoSede(sock_client, id_sede):
         print(info_sede)
         return info_sede
 
+
 def getInfoImpiego(sock_client, id_impiego):
     sock_client.send("get_name_impiego".encode())
     response = sock_client.recv(4096).decode()
@@ -141,6 +143,7 @@ def deleteDipendente( sock_client, id_dipendente ):
 
         response = sock_client.recv(4096).decode()
         print(response)
+
 #___________________________________________________ Send for command to socket server  ___________________________________________________
 def send_command_to_server(client_sock, command):
 
@@ -193,7 +196,7 @@ def create_socket_client(indirizzo_server):
         print("Connessione al server: "+str(indirizzo_server))
 
         print(client_sock)
-        Gui_interface.gui( client_sock )  # Start Gui interface
+        Gui_interface.gui(client_sock)  # Start Gui interface
 
     except sock.error as errore:
         print("Problema di connessioen al server..")
