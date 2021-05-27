@@ -5,11 +5,26 @@ from AbdulManager.AbdulManager.source import Gui_interface
 
 
 #___________________________________________________ Do command  ___________________________________________________
+
+def get_all_dipendenti(sock_client):
+    sock_client.send("get_all_dipendenti".encode())
+    response =sock_client.recv(4096).decode()
+    return response
+
 def getSedi( sock_client ):     #Get list of sedi from server
     sock_client.send("get_all_sedi".encode())
     response = sock_client.recv(4096).decode()
     lista_sedi = eval(response)
     return lista_sedi
+
+def get_id_sede(sock_client,info_sede):
+    sock_client.send("get_id_sede".encode())
+    response = sock_client.recv(4096).decode()
+    if response == "pronto":
+        sock_client.send(str(info_sede).encode())
+
+        id_sede = sock_client.recv(4096).decode()
+        return id_sede
 
 def getReparti( sock_client, sede ): #Get list of reparti from server with information about sede
     sock_client.send("get_all_reparti".encode())
@@ -50,7 +65,7 @@ def insertReparto( sock_client, reparto): #Insert reparto
     sock_client.send("insert_reparto".encode())
     response = sock_client.recv(4096).decode()
     if response == "pronto":
-        sock_client.send(reparto.encode())
+        sock_client.send(str(reparto).encode())
 
         response = sock_client.recv(4096).decode()
         print(response)
@@ -199,7 +214,8 @@ def create_socket_client(indirizzo_server):
         Gui_interface.gui(client_sock)  # Start Gui interface
 
     except sock.error as errore:
-        print("Problema di connessioen al server..")
+        print(errore)
+        print("Problema di connessione al server..")
         sys.exit()
 
 
@@ -207,6 +223,8 @@ def create_socket_client(indirizzo_server):
 if __name__ == '__main__':
 
     server = ("localhost", 15000)   #socket server information
+
+    #server = ("ec2-18-133-221-171.eu-west-2.compute.amazonaws.com", 15000)  # socket server information
 
     create_socket_client(server)  # Create socket client that will connect to socket server
 

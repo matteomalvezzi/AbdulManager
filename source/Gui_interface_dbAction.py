@@ -19,7 +19,7 @@ def correct_authentication(window, socket_client):
 
     new_window = Tk()
     new_window.title("Work page")
-    new_window.geometry("520x420")
+    new_window.geometry("820x460")
     new_window.config(background="#801d2b")
 
     frame_work = Frame(new_window,
@@ -29,7 +29,7 @@ def correct_authentication(window, socket_client):
 
     label_title = Label(frame_work,
                         text="Ufficio risorse umane", font=("Arial", 20, "normal"), fg="#edb415", bg="#801d2b", )
-    label_title.grid(row=0, columnspan=3, pady=6, padx=3)
+    label_title.grid(row=0, columnspan=3, pady=6, padx=6)
 
     pul_1 = Button(frame_work, text="Create", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
                    activeforeground="white",
@@ -37,7 +37,7 @@ def correct_authentication(window, socket_client):
                    pady=10,
                    command= create,
                    )
-    pul_1.grid(row=1, column=0, pady=6, padx=3)
+    pul_1.grid(row=1, column=0, pady=6, padx=6)
 
     pul_2 = Button(frame_work, text="Read", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
                    activeforeground="white",
@@ -45,7 +45,7 @@ def correct_authentication(window, socket_client):
                    pady=10,
                    command=read_db,
                    )
-    pul_2.grid(row=2, column=0, pady=6, padx=3)
+    pul_2.grid(row=2, column=0, pady=6, padx=6)
 
     pul_3 = Button(frame_work, text="Update", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
                    activeforeground="white",
@@ -53,7 +53,7 @@ def correct_authentication(window, socket_client):
                    pady=10,
                    command=update,
                    )
-    pul_3.grid(row=1, column=2, pady=6, padx=3)
+    pul_3.grid(row=1, column=2, pady=6, padx=6)
 
     pul_4 = Button(frame_work, text="Delete", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
                    activeforeground="white",
@@ -61,7 +61,39 @@ def correct_authentication(window, socket_client):
                    pady=10,
                    command=delete,
                    )
-    pul_4.grid(row=2, column=2, pady=6, padx=3)
+    pul_4.grid(row=2, column=2, pady=6, padx=6)
+
+    pul_5 = Button(frame_work, text="Add Impiegi", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
+                   activeforeground="white",
+                   activebackground="#801d2b",
+                   pady=10,
+                   command=add_Impieghi,
+                   )
+    pul_5.grid(row=3, column=0, pady=6, padx=6)
+
+    pul_6 = Button(frame_work, text="Add Sedi", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
+                   activeforeground="white",
+                   activebackground="#801d2b",
+                   pady=10,
+                   command=add_Sedi,
+                   )
+    pul_6.grid(row=3, column=2, pady=6, padx=6)
+
+    pul_7 = Button(frame_work, text="Add Reparti", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
+                   activeforeground="white",
+                   activebackground="#801d2b",
+                   pady=10,
+                   command=add_Reparti,
+                   )
+    pul_7.grid(row=4, column=0, pady=6, padx=6)
+
+    pul_8 = Button(frame_work, text="Get All dipendenti", font=("Arial", 12), width=20, fg="#edb415", bg="#801d2b",
+                   activeforeground="white",
+                   activebackground="#801d2b",
+                   pady=10,
+                   command=get_dipendenti,
+                   )
+    pul_8.grid(row=4, column=2, pady=6, padx=6)
 
     # ------------New Window----------
     window.destroy()  # delete the old window
@@ -248,7 +280,7 @@ def create():  # add someone to the db
                              bg="#801d2b", )
     label_occupation.grid(row=2, column=2, pady=6, padx=3, sticky=W)
 
-    occupation_menu = ttk.Combobox(frame_work, value=lista_impieghi, width=10, height=5)
+    occupation_menu = ttk.Combobox(frame_work, value=lista_impieghi, width=30, height=5)
     occupation_menu.grid(row=2, column=3)
     # -----------------------------------------------------------
     # -------------------------DATE------------------------------
@@ -557,7 +589,7 @@ def update():  # update someones data
         # -----------------------------------------------------------
         # ---------------------------GENDER--------------------------
         label_gender = Label(frame_work, text="Sesso:", font=("Arial", 14, "normal"), fg="#edb415", bg="#801d2b", )
-        label_gender.grid(row=5, column=0, pady=6, padx=3, sticky=W)
+        label_gender.grid(row=6, column=0, pady=6, padx=3, sticky=W)
 
         G = ["M", "F"]
         val = IntVar()
@@ -607,7 +639,7 @@ def update():  # update someones data
                                  bg="#801d2b", )
         label_occupation.grid(row=5, column=2, pady=6, padx=3, sticky=W)
 
-        occupation_menu = ttk.Combobox(frame_work, value=lista_impieghi, width=25, height=5)
+        occupation_menu = ttk.Combobox(frame_work, value=lista_impieghi, width=35, height=5)
         occupation_menu.insert(0,info_totale[16])
         occupation_menu.grid(row=5, column=3)
         # -----------------------------------------------------------
@@ -817,3 +849,187 @@ def delete():  # delete someone information from db
                   pady=10,
                   command=get_search)
     send.grid(row=3, columnspan=5, pady=6, padx=3)
+
+#///////////////////////////////////////////////////////////////////////////////////////
+
+def add_Impieghi():
+
+    def Nuovo_impiego():
+        impiego=entry_impiego.get()
+        cl.insertImpiego(cl_sock,str(impiego))
+
+    text = "Add page"
+    Window_create = Tk()
+    Window_create.title(text)
+    Window_create.geometry("420x320")
+    Window_create.config(background="#801d2b")
+
+    frame_work = Frame(Window_create, bg="#801d2b", )
+    frame_work.pack(pady=50)
+
+    label_title = Label(frame_work, text="Add Impiego", font=("Arial", 20, "normal"), fg="#edb415", bg="#801d2b")
+    label_title.grid(row=0, columnspan=2, pady=6, padx=6)
+
+    # ------------------------NAME---------------------------
+    label_name = Label(frame_work, text="Nuovo Ipiego:", font=("Arial", 14, "normal"), fg="#edb415", bg="#801d2b", )
+    label_name.grid(row=1, column=0, pady=6, padx=3, sticky=W)
+
+    entry_impiego = Entry(frame_work, font=("Arial", 15), width=15, )
+    entry_impiego.grid(row=1, column=1)
+    # -----------------------------------------------------------
+
+    send = Button(frame_work, text="ADD", font=("Arial", 12), width=10, fg="#edb415", bg="#801d2b",
+                  activeforeground="white",
+                  activebackground="#801d2b",
+                  pady=10,
+                  command=Nuovo_impiego)
+    send.grid(row=2, columnspan=2, pady=6, padx=3)
+
+
+#---------------------------------------------------------------------------------------------------------------------------
+def add_Sedi():
+
+    def Nuova_sede():
+        dizionario_Nuova_Sede={"indirizzo":entry_indirizzo.get(),"citta":entry_citta.get(),"provincia":entry_provincia.get(),
+                               "cap":entry_cap.get()}
+
+        cl.insertSede(cl_sock,dizionario_Nuova_Sede)
+
+    text = "Add page"
+    Window_create = Tk()
+    Window_create.title(text)
+    Window_create.geometry("420x420")
+    Window_create.config(background="#801d2b")
+
+    frame_work = Frame(Window_create, bg="#801d2b", )
+    frame_work.pack(pady=50)
+
+    label_title = Label(frame_work, text="Nuovo Sede", font=("Arial", 20, "normal"), fg="#edb415", bg="#801d2b")
+    label_title.grid(row=0, columnspan=2, pady=6, padx=6)
+
+    # ------------------------Indirizzo---------------------------
+    label_indirizzo = Label(frame_work, text="Indirizzo:", font=("Arial", 14, "normal"), fg="#edb415", bg="#801d2b", )
+    label_indirizzo.grid(row=1, column=0, pady=6, padx=3, sticky=W)
+
+    entry_indirizzo = Entry(frame_work, font=("Arial", 15), width=15, )
+    entry_indirizzo.grid(row=1, column=1)
+    # -----------------------------------------------------------
+    # ------------------------Citta---------------------------
+    label_citta = Label(frame_work, text="Citta:", font=("Arial", 14, "normal"), fg="#edb415", bg="#801d2b", )
+    label_citta.grid(row=2, column=0, pady=6, padx=3, sticky=W)
+
+    entry_citta = Entry(frame_work, font=("Arial", 15), width=15, )
+    entry_citta.grid(row=2, column=1)
+    # -----------------------------------------------------------
+    # ------------------------Provincia---------------------------
+    label_provincia = Label(frame_work, text="Provincia:", font=("Arial", 14, "normal"), fg="#edb415", bg="#801d2b", )
+    label_provincia.grid(row=3, column=0, pady=6, padx=3, sticky=W)
+
+    entry_provincia = Entry(frame_work, font=("Arial", 15), width=15, )
+    entry_provincia.grid(row=3, column=1)
+    # -----------------------------------------------------------
+    # ------------------------CAP--------------------------
+    label_cap = Label(frame_work, text="Cap:", font=("Arial", 14, "normal"), fg="#edb415", bg="#801d2b", )
+    label_cap.grid(row=4, column=0, pady=6, padx=3, sticky=W)
+
+    entry_cap = Entry(frame_work, font=("Arial", 15), width=15, )
+    entry_cap.grid(row=4, column=1)
+    # -----------------------------------------------------------
+
+    send = Button(frame_work, text="ADD", font=("Arial", 12), width=10, fg="#edb415", bg="#801d2b",
+                  activeforeground="white",
+                  activebackground="#801d2b",
+                  pady=10,
+                  command=Nuova_sede)
+    send.grid(row=5, columnspan=2, pady=6, padx=3)
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+def add_Reparti():
+
+    lista_sedi = cl.getSedi(cl_sock)
+    lista_sedi_stringhe = []
+    for one_sede in lista_sedi:
+        lista_sedi_stringhe.append(str(one_sede))
+
+    def get_sede(event):
+        sede_scelta=eval(entry_sedi.get())
+        print("sede  scelta",type(sede_scelta))
+
+        global id_sede
+        id_sede=cl.get_id_sede(cl_sock,sede_scelta)
+
+
+    def Nuovo_reparto():
+        diz_nuovo_reparto={"nome_reparto":entry_reparto.get(),"id_sede":id_sede}
+
+        cl.insertReparto(cl_sock,diz_nuovo_reparto)
+
+    text = "Add page"
+    Window_create = Tk()
+    Window_create.title(text)
+    Window_create.geometry("420x320")
+    Window_create.config(background="#801d2b")
+
+    frame_work = Frame(Window_create, bg="#801d2b", )
+    frame_work.pack(pady=50)
+
+    label_title = Label(frame_work, text="Nuovo Reparto", font=("Arial", 20, "normal"), fg="#edb415", bg="#801d2b")
+    label_title.grid(row=0, columnspan=2, pady=6, padx=6)
+
+    # --------------------sedi-------------------------------
+    label_occupation = Label(frame_work, text="Sedi:", font=("Arial", 14, "normal"), fg="#edb415",
+                             bg="#801d2b", )
+    label_occupation.grid(row=1, column=0, pady=6, padx=3, sticky=W)
+
+
+    entry_sedi = ttk.Combobox(frame_work, value=lista_sedi_stringhe, width=40)
+    entry_sedi.grid(row=1, column=1)
+    entry_sedi.bind("<<ComboboxSelected>>",get_sede)
+
+    # -----------------------------------------------------------
+    # ------------------------Nuovo reparto---------------------------
+    label_reparto = Label(frame_work, text="Nuovo Reparto:", font=("Arial", 14, "normal"), fg="#edb415", bg="#801d2b", )
+    label_reparto.grid(row=2, column=0, pady=6, padx=3, sticky=W)
+
+    entry_reparto = Entry(frame_work, font=("Arial", 15), width=23)
+    entry_reparto.grid(row=2, column=1)
+    # -----------------------------------------------------------
+
+    send = Button(frame_work, text="ADD", font=("Arial", 12), width=10, fg="#edb415", bg="#801d2b",
+                  activeforeground="white",
+                  activebackground="#801d2b",
+                  pady=10,
+                  command=Nuovo_reparto)
+    send.grid(row=3, columnspan=2, pady=6, padx=3)
+
+def get_dipendenti():
+
+    text = "Get page"
+    Window_create = Tk()
+    Window_create.title(text)
+    Window_create.geometry("420x1020")
+    Window_create.config(background="#801d2b")
+
+    frame_work = Frame(Window_create, bg="#801d2b", )
+    frame_work.pack(pady=50)
+
+    label_title = Label(frame_work, text="Tutti i Dipendenti", font=("Arial", 20, "normal"), fg="#edb415", bg="#801d2b")
+    label_title.grid(row=0, columnspan=2, pady=6, padx=6)
+
+    tutti_dipendenti=eval(cl.get_all_dipendenti(cl_sock))
+
+    print("prova--",tutti_dipendenti[1])
+
+
+
+    pos=1
+    for i in tutti_dipendenti:
+        data = "Nome: " + str(i[1]) + "\nCognome: " + i[2] + "\nSesso: " + i[3] + \
+               "\nData di Nascita: " + i[4] + "\nLuogo di Nascita: " + i[5] + "\nCodice Fiscale: " + \
+               i[6] + "\nData Assunzione: " + i[8] + "\nStiprndio:"+str(i[9])
+
+        db_data = Label(frame_work, text=data, font=("Arial", 14, "normal"), fg="#edb415",width=35)
+        db_data.grid(row=pos,pady=10)
+        print(pos)
+        pos=pos+1
