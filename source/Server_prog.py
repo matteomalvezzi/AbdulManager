@@ -1,8 +1,9 @@
 # ___________________________________________________Import some libraries
-import pickle
+from datetime import datetime
 import socket as sock
 import threading
 import mariadb
+import delete_mail.smtplib_mail as delete_mail
 
 
 def sql_safe(field):
@@ -15,7 +16,7 @@ def connect_to_Database():
     try:
         db_connection = mariadb.connect(
             user="root",
-            password="7637",
+            password="",
             host="localhost",
             port=3306,
             database="abdulmanager"
@@ -61,6 +62,25 @@ def get_password_from_DB(username):
         return None
 
 # ___________________________________________________Execute Command ___________________________________________________
+def get_data_for_email( id_dipendente ):
+    cursor = db_connection.cursor()
+    try:
+        search_query = "SELECT nome, cognome, codice_fiscale FROM abdulmanager.dipendente WHERE id = '" + sql_safe(str(id_dipendente)) + "';"
+        cursor.execute(search_query)
+        delete_mail_data = cursor.fetchall()
+        return delete_mail_data
+    except Exception as sql_e :
+        print(sql_e)
+        return None
+
+def send_delete_email( delete_mail_data ):
+    ora = datetime.now().strftime("%H:%M:%S")
+    giorno = datetime.today().strftime("%d-%m-%Y")
+    nome = str(delete_mail_data[0][0])
+    cognome = str(delete_mail_data[0][1])
+    cf = str(delete_mail_data[0][2])
+    print(nome + "  " + cognome + "  " + cf + "  " + ora + "  " + giorno)
+    delete_mail.send_delete_email(nome, cognome, cf, ora, giorno)
 
 # ___________________________________________________GET IMPIEGHI, SEDI, REPARTI ___________________________________________________
 def get_all_impieghi ():
@@ -243,11 +263,13 @@ def updateDipendente ( dipendente_info, impiego_id, dipendente_id, reparto_id):
 def deleteDipendente ( dipendente_id ):
     cursor = db_connection.cursor()
     try:
+        email_data = get_data_for_email( dipendente_id )
         query = "DELETE FROM abdulmanager.dipendente WHERE id = '" + dipendente_id +"';"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
         cross_query = "DELETE FROM abdulmanager.reparto_dipendenti WHERE id_dipendente = '" + dipendente_id + "';"
         cursor.execute(cross_query)
+        send_delete_email( email_data )
     except Exception as e:
         print(e)
 # ___________________________________________________Get Command ___________________________________________________
@@ -509,5 +531,5 @@ def start_server_socket(server_address, backlog=1):
 #___________________________________________________ Main ___________________________________________________
 if __name__ == '__main__':
 
-    server_address = ("localhost", 15000) #tupla con indirizzo e porta
+    server_address = ("172.31.24.25", 15000) #tupla con indirizzo e porta
     start_server_socket(server_address)

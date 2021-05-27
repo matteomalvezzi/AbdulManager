@@ -199,14 +199,15 @@ def create_socket_client(indirizzo_server):
         Gui_interface.gui(client_sock)  # Start Gui interface
 
     except sock.error as errore:
-        print("Problema di connessioen al server..")
+        print(errore)
+        print("Problema di connessione al server..")
         sys.exit()
 
 
 #___________________________________________________ Main ___________________________________________________
 if __name__ == '__main__':
 
-    server = ("localhost", 15000)   #socket server information
+    server = ("ec2-18-133-221-171.eu-west-2.compute.amazonaws.com", 15000)   #socket server information
 
     create_socket_client(server)  # Create socket client that will connect to socket server
 
