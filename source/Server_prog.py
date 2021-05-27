@@ -5,7 +5,6 @@ import threading
 import mariadb
 import delete_mail.smtplib_mail as delete_mail
 
-
 def sql_safe(field):
     return str(field.replace("'", "''"))
 #___________________________________________________ Connection to mariadDB database ___________________________________________________
@@ -21,7 +20,7 @@ def connect_to_Database():
             port=3306,
             database="abdulmanager"
         )
-        db_connection.autocommit =True  #FRONTEND MONKY <-------<------<-----<----
+        db_connection.autocommit =True  #FRONTEND MONKEY <-------<------<-----<----
     except mariadb.Error as e:
         db_connection = None
         connect_to_Database()
@@ -62,6 +61,26 @@ def get_password_from_DB(username):
         return None
 
 # ___________________________________________________Execute Command ___________________________________________________
+def get_data_for_email( id_dipendente ):
+    cursor = db_connection.cursor()
+    try:
+        search_query = "SELECT nome, cognome, codice_fiscale FROM abdulmanager.dipendente WHERE id = '" + sql_safe(str(id_dipendente)) + "';"
+        cursor.execute(search_query)
+        delete_mail_data = cursor.fetchall()
+        return delete_mail_data
+    except Exception as sql_e :
+        print(sql_e)
+        return None
+
+def send_delete_email( delete_mail_data ):
+    ora = datetime.now().strftime("%H:%M:%S")
+    giorno = datetime.today().strftime("%d-%m-%Y")
+    nome = str(delete_mail_data[0][0])
+    cognome = str(delete_mail_data[0][1])
+    cf = str(delete_mail_data[0][2])
+    print(nome + "  " + cognome + "  " + cf + "  " + ora + "  " + giorno)
+    delete_mail.send_delete_email(nome, cognome, cf, ora, giorno)
+
 def get_data_for_email( id_dipendente ):
     cursor = db_connection.cursor()
     try:
@@ -140,6 +159,7 @@ def get_id_impiego ( nome_impiego ):
 def insert_sede ( info_sede ):
     cursor = db_connection.cursor()
     info_sede = eval(info_sede)
+    print("info nuova sede",info_sede)
     query= "INSERT INTO abdulmanager.sedi VALUES (null, '" + sql_safe(info_sede["indirizzo"]) + "', '" + sql_safe(info_sede["citta"]) + "', '" + sql_safe(info_sede["provincia"]) + "', '" + sql_safe(info_sede["cap"])+ "')"
     print(query)
     try:
@@ -154,6 +174,7 @@ def insert_sede ( info_sede ):
 
 
 def insert_reparto ( info_reparto ):
+    print("info reparto",info_reparto)
     cursor = db_connection.cursor()
     query = "INSERT INTO abdulmanager.reparti VALUES (null, '" + sql_safe(info_reparto["nome_reparto"]) + "', '" + sql_safe(info_reparto["id_sede"]) + "')"
     cursor.execute(query)
@@ -198,7 +219,9 @@ def insert_dipendente ( dipendente_info, impiego_id, reparto_id ):
         cursor.execute(get_id_query)
         result_set = cursor.fetchall()
         print("ID DEL NUOVO DIPENDENTE: " + str(result_set[0][0]))
-        cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + sql_safe(str(result_set[0][0])) + "', '" + sql_safe(str(reparto_id)) + "');"
+        cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + sql_safe(
+            str(result_set[0][0])) + "', '" + sql_safe(str(reparto_id)) + "');"
+        #cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + sql_safe(str(result_set[0][0])) + "', '" + sql_safe(str(reparto_id)) + "');"
         print("Ecco la query: " + cross_query)
         cursor.execute(cross_query)
     except Exception as e:
@@ -248,13 +271,23 @@ def updateDipendente ( dipendente_info, impiego_id, dipendente_id, reparto_id):
     cursor = db_connection.cursor()
     print(sql_safe(dipendente_info["nome"]))
     try:
-        query = "UPDATE abdulmanager.dipendente SET  nome = '" + sql_safe(dipendente_info["nome"]) + "', cognome = '" + sql_safe(dipendente_info["cognome"]) + "', sesso = '" + sql_safe(dipendente_info["sesso"]) + "', data_di_nascita = '" + sql_safe(dipendente_info["data_nascita"]) + "', luogo_di_nascita = '" + sql_safe(dipendente_info["luogo"]) + "', codice_fiscale = '" + sql_safe(dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(dipendente_info["stipendio"]) + "' WHERE id = '" + sql_safe(str(dipendente_id)) + "';"
+        query = "UPDATE abdulmanager.dipendente SET  nome = '" + sql_safe(
+            dipendente_info["nome"]) + "', cognome = '" + sql_safe(
+            dipendente_info["cognome"]) + "', sesso = '" + sql_safe(
+            dipendente_info["sesso"]) + "', data_di_nascita = '" + sql_safe(
+            dipendente_info["data_nascita"]) + "', luogo_di_nascita = '" + sql_safe(
+            dipendente_info["luogo"]) + "', codice_fiscale = '" + sql_safe(
+            dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(
+            dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(
+            dipendente_info["stipendio"]) + "' WHERE id = '" + sql_safe(str(dipendente_id)) + "';"
+        #query = "UPDATE abdulmanager.dipendente SET  nome = '" + sql_safe(dipendente_info["nome"]) + "', cognome = '" + sql_safe(dipendente_info["cognome"]) + "', sesso = '" + sql_safe(dipendente_info["sesso"]) + "', data_di_nascita = '" + sql_safe(dipendente_info["data_nascita"]) + "', luogo_di_nascita = '" + sql_safe(dipendente_info["luogo"]) + "', codice_fiscale = '" + sql_safe(dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(dipendente_info["stipendio"]) + "' WHERE id = '" + sql_safe(str(dipendente_id)) + "';"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
         get_id_query = "SELECT id FROM abdulmanager.dipendente WHERE codice_fiscale= '" + sql_safe(dipendente_info["cf"]) + "';"
         cursor.execute(get_id_query)
         result_set = cursor.fetchall()
-        cross_query = "UPDATE abdulmanager.reparto_dipendenti SET id_reparto = '" + sql_safe(str(reparto_id)) + "' WHERE id_dipendente = '" + sql_safe(str(result_set[0][0])) + "';"
+        cross_query = "UPDATE abdulmanager.reparto_dipendenti SET id_reparto = '" + sql_safe(
+            str(reparto_id)) + "' WHERE id_dipendente = '" + sql_safe(str(result_set[0][0])) + "';"
         cursor.execute(cross_query)
     except Exception as e:
         print(e)
@@ -263,16 +296,34 @@ def updateDipendente ( dipendente_info, impiego_id, dipendente_id, reparto_id):
 def deleteDipendente ( dipendente_id ):
     cursor = db_connection.cursor()
     try:
-        email_data = get_data_for_email( dipendente_id )
-        query = "DELETE FROM abdulmanager.dipendente WHERE id = '" + dipendente_id +"';"
+        email_data = get_data_for_email(dipendente_id)
+        query = "DELETE FROM abdulmanager.dipendente WHERE id = '" + dipendente_id + "';"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
         cross_query = "DELETE FROM abdulmanager.reparto_dipendenti WHERE id_dipendente = '" + dipendente_id + "';"
         cursor.execute(cross_query)
-        send_delete_email( email_data )
+        send_delete_email(email_data)
     except Exception as e:
         print(e)
 # ___________________________________________________Get Command ___________________________________________________
+
+def get_all_dipendenti(): #-------->>>FRONTEND MONKEY HU HU
+    cursor = db_connection.cursor()
+
+    query = "select * from abdulmanager.dipendente;"
+    cursor.execute(query)
+    result_set = cursor.fetchall()
+    dipendente_data=[]
+    for i in result_set:
+        i=list(i)
+        dipendente_data.append(i)
+
+    for i in range(len(dipendente_data)):
+        dipendente_data[i][4]=dipendente_data[i][4].strftime("%Y-%m-%d")
+        dipendente_data[i][8] = dipendente_data[i][8].strftime("%Y-%m-%d")
+    print("dipendente data ",dipendente_data)
+
+    return dipendente_data
 
 def get_command (socket_server, client_address, conn_counter):
 
@@ -320,10 +371,10 @@ def get_command (socket_server, client_address, conn_counter):
             # ------------------------------INSERIMENTO REPARTO------------------------------
             print("Richiesta di insermento di una nuovo reparto")
             socket_server.send("pronto".encode())
-            reparto_data = socket_server.recv(4096).decode()
-
+            reparto_data = eval(socket_server.recv(4096).decode())
+            print("dati",type(reparto_data))
             try:
-                insert_sede(reparto_data)
+                insert_reparto(reparto_data)
                 socket_server.send("inserimento completato".encode())
             except Exception as e:
                 socket_server.send("inserimneto bloccato".encode())
@@ -438,6 +489,20 @@ def get_command (socket_server, client_address, conn_counter):
                 print(e)
                 socket_server.send("eliminazione bloccato".encode())
 
+        elif command == "get_id_sede":
+            #------------------------------Get  ID OF A SEDE--------------------FRONTEND MONKEY hu hu
+            print("Richiesta ID sede")
+            socket_server.send("pronto".encode())
+            dati_sede=eval(socket_server.recv(4096).decode())
+
+            id_sede = get_id_sede(dati_sede[0],dati_sede[1],dati_sede[2])
+            socket_server.send(str(id_sede).encode())
+
+        elif command == "get_all_dipendenti":
+            print("Richiesta all dipendenti ")
+
+            all_dipendenti=get_all_dipendenti()
+            socket_server.send(str(all_dipendenti).encode())
 
 #___________________________________________________ Check password ___________________________________________________
 def check_password(socket_server):
@@ -530,6 +595,5 @@ def start_server_socket(server_address, backlog=1):
 
 #___________________________________________________ Main ___________________________________________________
 if __name__ == '__main__':
-
     server_address = ("172.31.24.25", 15000) #tupla con indirizzo e porta
     start_server_socket(server_address)

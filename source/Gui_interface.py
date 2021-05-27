@@ -26,7 +26,6 @@ def gui( client_sock ):
         passw = entry_2.get()
         check(user,passw,window)
 
-
     window = Tk()  # istance my window
 
     window.geometry("520x420")  # some Stytle
@@ -36,6 +35,7 @@ def gui( client_sock ):
     icon = PhotoImage(file="../resource/pngegg.png")  # convert my img and set logo
     window.iconphoto(True, icon)
     icon_2 = PhotoImage(file="../resource/logo_2.png")
+
 
     # create the mian frame
     frame = Frame(window,
@@ -50,26 +50,28 @@ def gui( client_sock ):
 
     label_name = Label(frame,
                        text="Username",
-                       font=("Arial", 15, "normal"),
+                       font=("SimHei", 15, "normal"),
                        fg="#edb415", bg="#801d2b",
                        ).grid(row=1, column=0, pady=4, sticky=W,padx=2)
     # create the fist entry box
     entry_1 = Entry(frame,
-                    font=("Arial", 15),
+                    font=("SimHei", 15),
                     width=15,
+                    fg="#edb415",
                     )
     entry_1.grid(row=1, column=1)
 
     label_pass = Label(frame,
                        text="Password",
-                       font=("Arial", 15,),
+                       font=("SimHei", 15,),
                        fg="#edb415", bg="#801d2b",
                        ).grid(row=2, column=0, pady=2, sticky=W,padx=2)
 
     # create the seconde entry box
     entry_2 = Entry(frame,
-                    font=("Arial", 15),
+                    font=("SimHei", 15),
                     show="*",
+                    fg="#edb415",
                     width=15,
                     )
     entry_2.grid(row=2, column=1)
@@ -77,13 +79,16 @@ def gui( client_sock ):
     # create my button and ad sone style
     button = Button(frame,
                     text="Login",
-                    font=("Arial", 20),
+                    font=("SimHei", 20),
                     fg="#edb415",
                     bg="#801d2b",
+                    width=7,
                     activeforeground="white",
                     activebackground="#801d2b",
                     pady=10,
-                    command=read).grid(row=3, columnspan=2, pady=6)
+                    command=read)
+
+    button.grid(row=3, columnspan=2, pady=6)
 
     window.mainloop()  # make sure that my window is visible
 
