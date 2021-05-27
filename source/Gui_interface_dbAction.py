@@ -7,7 +7,7 @@
 # i decide to split some Gui code to make it easy to understand
 from tkinter import *
 from tkinter import messagebox
-from AbdulManager.AbdulManager.source import Client as cl
+from source import Client as cl
 from tkinter import ttk
 
 # ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

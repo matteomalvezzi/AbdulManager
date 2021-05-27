@@ -61,6 +61,25 @@ def get_password_from_DB(username):
         return None
 
 # ___________________________________________________Execute Command ___________________________________________________
+def get_data_for_email( id_dipendente ):
+    cursor = db_connection.cursor()
+    try:
+        search_query = "SELECT nome, cognome, codice_fiscale FROM abdulmanager.dipendente WHERE id = '" + sql_safe(str(id_dipendente)) + "';"
+        cursor.execute(search_query)
+        delete_mail_data = cursor.fetchall()
+        return delete_mail_data
+    except Exception as sql_e :
+        print(sql_e)
+        return None
+
+def send_delete_email( delete_mail_data ):
+    ora = datetime.now().strftime("%H:%M:%S")
+    giorno = datetime.today().strftime("%d-%m-%Y")
+    nome = str(delete_mail_data[0][0])
+    cognome = str(delete_mail_data[0][1])
+    cf = str(delete_mail_data[0][2])
+    print(nome + "  " + cognome + "  " + cf + "  " + ora + "  " + giorno)
+    delete_mail.send_delete_email(nome, cognome, cf, ora, giorno)
 
 def get_data_for_email( id_dipendente ):
     cursor = db_connection.cursor()
@@ -202,6 +221,7 @@ def insert_dipendente ( dipendente_info, impiego_id, reparto_id ):
         print("ID DEL NUOVO DIPENDENTE: " + str(result_set[0][0]))
         cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + sql_safe(
             str(result_set[0][0])) + "', '" + sql_safe(str(reparto_id)) + "');"
+        #cross_query = "INSERT INTO abdulmanager.reparto_dipendenti VALUES ('" + sql_safe(str(result_set[0][0])) + "', '" + sql_safe(str(reparto_id)) + "');"
         print("Ecco la query: " + cross_query)
         cursor.execute(cross_query)
     except Exception as e:
@@ -260,6 +280,7 @@ def updateDipendente ( dipendente_info, impiego_id, dipendente_id, reparto_id):
             dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(
             dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(
             dipendente_info["stipendio"]) + "' WHERE id = '" + sql_safe(str(dipendente_id)) + "';"
+        #query = "UPDATE abdulmanager.dipendente SET  nome = '" + sql_safe(dipendente_info["nome"]) + "', cognome = '" + sql_safe(dipendente_info["cognome"]) + "', sesso = '" + sql_safe(dipendente_info["sesso"]) + "', data_di_nascita = '" + sql_safe(dipendente_info["data_nascita"]) + "', luogo_di_nascita = '" + sql_safe(dipendente_info["luogo"]) + "', codice_fiscale = '" + sql_safe(dipendente_info["cf"]) + "', impiego = '" + str(impiego_id) + "', data_assunzione = '" + sql_safe(dipendente_info["data_assunzione"]) + "', stipendio = '" + sql_safe(dipendente_info["stipendio"]) + "' WHERE id = '" + sql_safe(str(dipendente_id)) + "';"
         print("Query eseguita: " + str(query))
         cursor.execute(query)
         get_id_query = "SELECT id FROM abdulmanager.dipendente WHERE codice_fiscale= '" + sql_safe(dipendente_info["cf"]) + "';"
@@ -574,7 +595,5 @@ def start_server_socket(server_address, backlog=1):
 
 #___________________________________________________ Main ___________________________________________________
 if __name__ == '__main__':
-
-    server_address = ("localhost", 15000) #tupla con indirizzo e porta
-    #server_address = ("172.31.24.25", 15000)  # tupla con indirizzo e porta
+    server_address = ("172.31.24.25", 15000) #tupla con indirizzo e porta
     start_server_socket(server_address)

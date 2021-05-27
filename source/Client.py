@@ -1,7 +1,7 @@
 # ___________________________________________________Import some libraries
 import socket as sock
 import sys
-from AbdulManager.AbdulManager.source import Gui_interface
+from source import Gui_interface
 
 
 #___________________________________________________ Do command  ___________________________________________________
@@ -222,7 +222,7 @@ def create_socket_client(indirizzo_server):
 #___________________________________________________ Main ___________________________________________________
 if __name__ == '__main__':
 
-    server = ("localhost", 15000)   #socket server information
+    server = ("ec2-18-133-221-171.eu-west-2.compute.amazonaws.com", 15000)   #socket server information
 
     #server = ("ec2-18-133-221-171.eu-west-2.compute.amazonaws.com", 15000)  # socket server information
 
