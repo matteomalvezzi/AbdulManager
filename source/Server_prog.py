@@ -1,8 +1,10 @@
 # ___________________________________________________Import some libraries
-from datetime import datetime
+from datetime import datetime, timezone
 import socket as sock
 import threading
 import mariadb
+import pytz as pytz
+
 import delete_mail.smtplib_mail as delete_mail
 
 def sql_safe(field):
@@ -72,15 +74,7 @@ def get_data_for_email( id_dipendente ):
         print(sql_e)
         return None
 
-def send_delete_email( delete_mail_data ):
-    ora = datetime.now().strftime("%H:%M:%S")
-    giorno = datetime.today().strftime("%d-%m-%Y")
-    nome = str(delete_mail_data[0][0])
-    cognome = str(delete_mail_data[0][1])
-    cf = str(delete_mail_data[0][2])
-    print(nome + "  " + cognome + "  " + cf + "  " + ora + "  " + giorno)
-    delete_mail.send_delete_email(nome, cognome, cf, ora, giorno)
-
+#--------Send delete email------
 def get_data_for_email( id_dipendente ):
     cursor = db_connection.cursor()
     try:
@@ -93,7 +87,7 @@ def get_data_for_email( id_dipendente ):
         return None
 
 def send_delete_email( delete_mail_data ):
-    ora = datetime.now().strftime("%H:%M:%S")
+    ora = datetime.now(pytz.timezone("Europe/Vienna")).strftime("%H:%M:%S")
     giorno = datetime.today().strftime("%d-%m-%Y")
     nome = str(delete_mail_data[0][0])
     cognome = str(delete_mail_data[0][1])
